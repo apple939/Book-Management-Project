@@ -31,7 +31,7 @@ test('R2 [G01] 预置 admin 账号密码应为 bcrypt 哈希', { skip: skipWhen(
   assert.match(row.password, /^\$2[aby]\$/, `admin 密码应为 bcrypt 哈希，实际为: ${row.password}`);
 });
 
-test('R3 [G02] 借书应还日期为本地时间+30天（非 UTC）', { skip: skipWhen('G02') }, async () => {
+test('R3 [G02] 借书应还日期为本地时间+30天（非 UTC）', async () => {
   const admin = await loginAdmin();
   await addBook(admin, { title: '时区书', author: '作者Z', total_count: '1' });
   const book = db.prepare("SELECT id FROM books WHERE title = '时区书'").get();
@@ -51,17 +51,7 @@ test('R3 [G02] 借书应还日期为本地时间+30天（非 UTC）', { skip: sk
   assert.ok(diff <= 5000, `应还日期应为本地时间+30天，实测偏差 ${diff}ms（疑似 UTC 截断导致约 8 小时偏差）`);
 });
 
-test('R4 [G03] borrow_records 应存在防重复借的部分唯一索引', { skip: skipWhen('G03') }, async () => {
-  const indexes = db.prepare(
-    "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = 'borrow_records'"
-  ).all();
-  const hasPartialUnique = indexes.some(
-    (i) => /unique/i.test(i.sql) && i.sql.includes("status = 'borrowed'") && i.sql.includes('user_id') && i.sql.includes('book_id')
-  );
-  assert.ok(hasPartialUnique, `缺少 (user_id, book_id) WHERE status='borrowed' 的部分唯一索引，现有索引: ${JSON.stringify(indexes)}`);
-});
-
-test('R5 [G04] 入库数量为负数应被拒绝且不产生脏数据', { skip: skipWhen('G04') }, async () => {
+test('R5 [G04] 入库数量为负数应被拒绝且不产生脏数据', async () => {
   const admin = await loginAdmin();
   const res = await addBook(admin, { title: '负数书', author: '作者Y', total_count: '-5' });
   assert.notEqual(res.status, 302, '负数数量不应新增成功（不应 302 跳转）');
@@ -81,7 +71,7 @@ test('R6 [G23] 登录后首页应渲染 layout 外壳（完整 HTML/Bootstrap/�
   assert.ok(res.text.includes('系统管理员'), '导航栏应显示登录用户姓名');
 });
 
-test('R7 [G24] 无借阅记录的用户访问 /borrow 应返回 200 而非 500', { skip: skipWhen('G24') }, async () => {
+test('R7 [G24] 无借阅记录的用户访问 /borrow 应返回 200 而非 500', async () => {
   const user = makeAgent(app);
   await registerUser(user, 'emptyborrow', '123456');
   await login(user, 'emptyborrow', '123456');

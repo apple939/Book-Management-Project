@@ -13,6 +13,14 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+const MAX_BOOK_COUNT = 99999;
+
+function parseBookCount(v) {
+  if (typeof v !== 'string' || !/^\d{1,5}$/.test(v.trim())) return null;
+  const n = Number(v.trim());
+  return (n >= 1 && n <= MAX_BOOK_COUNT) ? n : null;
+}
+
 router.get('/', (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 12;
@@ -66,7 +74,12 @@ router.post('/add', requireAdmin, (req, res) => {
     return res.render('books/edit', { title: '新增图书', book: req.body, categories, error: '书名和作者不能为空' });
   }
 
-  const total = parseInt(total_count) || 1;
+  const total = parseBookCount(total_count);
+  if (total === null) {
+    const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
+    return res.render('books/edit', { title: '新增图书', book: req.body, categories, error: `入库数量必须为 1-${MAX_BOOK_COUNT} 的整数` });
+  }
+
   db.prepare(`INSERT INTO books (isbn, title, author, publisher, publish_date, category_id, total_count, remain_count, description)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(isbn, title, author, publisher, publish_date, category_id || null, total, total, description);
 
@@ -89,7 +102,11 @@ router.post('/edit/:id', requireAdmin, (req, res) => {
   }
 
   const oldBook = db.prepare('SELECT * FROM books WHERE id = ?').get(req.params.id);
-  const total = parseInt(total_count) || 1;
+  const total = parseBookCount(total_count);
+  if (total === null) {
+    const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
+    return res.render('books/edit', { title: '修改图书', book: { ...req.body, id: req.params.id }, categories, error: `入库数量必须为 1-${MAX_BOOK_COUNT} 的整数` });
+  }
   const borrowed = oldBook.total_count - oldBook.remain_count;
   const remain = Math.max(0, total - borrowed);
 

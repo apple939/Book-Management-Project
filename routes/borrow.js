@@ -13,34 +13,40 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function formatLocalDateTime(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
 router.get('/', requireLogin, (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 15;
   const offset = (page - 1) * limit;
   const status = req.query.status || '';
 
-  let sql = `SELECT br.*, b.title as book_title, b.isbn, u.username, u.realname
+  const baseSelect = `SELECT br.*, b.title as book_title, b.isbn, u.username, u.realname
     FROM borrow_records br
     JOIN books b ON br.book_id = b.id
-    JOIN users u ON br.user_id = u.id
-    WHERE 1=1`;
+    JOIN users u ON br.user_id = u.id`;
+  let whereSql = 'WHERE 1=1';
   const params = [];
 
   if (req.session.user.role !== 'admin') {
-    sql += ' AND br.user_id = ?';
+    whereSql += ' AND br.user_id = ?';
     params.push(req.session.user.id);
   }
   if (status) {
-    sql += ' AND br.status = ?';
+    whereSql += ' AND br.status = ?';
     params.push(status);
   }
 
-  const countSql = sql.replace(/SELECT.*?FROM/, 'SELECT COUNT(*) as total FROM');
+  const countSql = `SELECT COUNT(*) as total FROM borrow_records br
+    JOIN books b ON br.book_id = b.id
+    JOIN users u ON br.user_id = u.id ${whereSql}`;
   const total = db.prepare(countSql).get(...params).total;
-  sql += ' ORDER BY br.borrow_date DESC LIMIT ? OFFSET ?';
-  params.push(limit, offset);
 
-  const records = db.prepare(sql).all(...params);
+  const records = db.prepare(`${baseSelect} ${whereSql} ORDER BY br.borrow_date DESC LIMIT ? OFFSET ?`)
+    .all(...params, limit, offset);
   const totalPages = Math.ceil(total / limit);
 
   res.render('borrow/list', {
@@ -65,10 +71,7 @@ router.post('/borrow/:bookId', requireLogin, (req, res) => {
   const overdueCount = db.prepare("SELECT COUNT(*) as cnt FROM borrow_records WHERE user_id = ? AND status = 'borrowed' AND due_date < datetime('now','localtime')").get(req.session.user.id);
   if (overdueCount.cnt > 0) return res.status(400).json({ ok: false, msg: '您有逾期未还的图书，请先归还后再借' });
 
-  const today = new Date();
-  const dueDate = new Date(today);
-  dueDate.setDate(dueDate.getDate() + 30);
-  const dueDateStr = dueDate.toISOString().replace('T', ' ').substring(0, 19);
+  const dueDateStr = formatLocalDateTime(new Date(Date.now() + 30 * 86400000));
 
   db.prepare('INSERT INTO borrow_records (user_id, book_id, due_date) VALUES (?, ?, ?)').run(req.session.user.id, bookId, dueDateStr);
   db.prepare('UPDATE books SET remain_count = remain_count - 1 WHERE id = ?').run(bookId);

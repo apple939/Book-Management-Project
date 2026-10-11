@@ -200,6 +200,27 @@ test('TC_BORROW_011 未登录用户看不到借阅按钮且接口被重定向', 
   assert.ok(res.headers.location.includes('/auth/login'));
 });
 
+test('G02 边界：29 天未逾期、31 天逾期', async () => {
+  const admin = makeAgent(app);
+  await login(admin, 'admin', 'admin123');
+  await addBook(admin, { title: '边界书A', author: '作者O', total_count: '1' });
+  await addBook(admin, { title: '边界书B', author: '作者P', total_count: '1' });
+  const bookA = db.prepare("SELECT id FROM books WHERE title = '边界书A'").get();
+  const bookB = db.prepare("SELECT id FROM books WHERE title = '边界书B'").get();
+
+  const user = makeAgent(app);
+  await loginUser(user, 'boundary', '123456');
+  const uid = db.prepare("SELECT id FROM users WHERE username = 'boundary'").get().id;
+  const insert = db.prepare('INSERT INTO borrow_records (user_id, book_id, due_date) VALUES (?, ?, ?)');
+  insert.run(uid, bookA.id, formatLocalDateTime(new Date(Date.now() + 29 * 86400000)));
+  insert.run(uid, bookB.id, formatLocalDateTime(new Date(Date.now() - 31 * 86400000)));
+
+  const res = await user.get('/borrow/overdue');
+  assert.equal(res.status, 200);
+  assert.ok(!res.text.includes('边界书A'), '29 天后才到期，不应判定为逾期');
+  assert.ok(res.text.includes('边界书B'), '已过应还日期 31 天，应判定为逾期');
+});
+
 test('借阅记录列表：普通用户只能看到自己的记录', async () => {
   const admin = makeAgent(app);
   await login(admin, 'admin', 'admin123');

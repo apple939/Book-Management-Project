@@ -99,6 +99,17 @@ test('TC_BOOK_012 非管理员访问新增页面被拒 403', async () => {
   assert.equal(res.status, 403);
 });
 
+test('G04 数量校验：非法值被拒且不产生脏数据，99999 为上限', async () => {
+  const admin = await loginAdmin();
+  for (const bad of ['0', 'abc', '100000', '1.5']) {
+    const res = await addBook(admin, { title: `非法数量_${bad}`, author: '作者Q', total_count: bad });
+    assert.notEqual(res.status, 302, `total_count=${bad} 不应新增成功`);
+    assert.equal(db.prepare('SELECT COUNT(*) AS c FROM books WHERE title = ?').get(`非法数量_${bad}`).c, 0, `total_count=${bad} 不应入库`);
+  }
+  const ok = await addBook(admin, { title: '上限书', author: '作者Q', total_count: '99999' });
+  assert.equal(ok.status, 302, 'total_count=99999 应新增成功');
+});
+
 test('TC_SEARCH_001 关键词搜索命中书名', async () => {
   const admin = await loginAdmin();
   await addBook(admin, { title: '数据结构与算法', author: '作者E' });
