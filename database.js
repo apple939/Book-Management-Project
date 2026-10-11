@@ -1,6 +1,14 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
+if (process.env.NODE_ENV === 'test') {
+  const prodPath = path.join(__dirname, 'bookmanager.db');
+  const target = process.env.DB_PATH ? path.resolve(process.env.DB_PATH) : prodPath;
+  if (!process.env.DB_PATH || target === prodPath) {
+    console.warn('[WARN] NODE_ENV=test 但 DB_PATH 未设置或指向生产 bookmanager.db，请检查测试隔离！');
+  }
+}
+
 const db = new Database(process.env.DB_PATH || path.join(__dirname, 'bookmanager.db'));
 
 db.pragma('journal_mode = WAL');

@@ -3,8 +3,8 @@ process.env.DB_PATH = ':memory:';
 
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-const app = require('../app');
 const { db, resetDb, makeAgent, login, registerUser, addBook } = require('./helpers/test-utils');
+const app = require('../app');
 
 const RED = process.env.RED_TESTS === '1';
 const skipWhen = (g) => (RED ? false : `第2批 ${g} 修复后解锁`);
@@ -88,6 +88,11 @@ test('R7 [G24] 无借阅记录的用户访问 /borrow 应返回 200 而非 500',
   const res = await user.get('/borrow');
   assert.equal(res.status, 200, `空记录列表不应 500，实际状态 ${res.status}`);
   assert.ok(res.text.includes('借阅记录'), '应正常渲染借阅记录页');
+});
+
+test('隔离防线：测试进程使用的数据库不是生产 bookmanager.db', async () => {
+  const dbName = String(db.name || '');
+  assert.ok(!dbName.includes('bookmanager.db'), `测试不得使用生产库，实际 db.name: ${dbName}`);
 });
 
 test('并发验收 [G03] 库存 1 的书 20 个并发借阅仅成功 1 次且库存不为负', async () => {

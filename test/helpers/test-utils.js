@@ -1,5 +1,13 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
-process.env.DB_PATH = process.env.DB_PATH || ':memory:';
+
+const path = require('path');
+const PROD_DB_PATH = path.resolve(__dirname, '..', '..', 'bookmanager.db');
+if (!process.env.DB_PATH) {
+  throw new Error('[TEST GUARD] DB_PATH 未设置，测试可能触碰生产 bookmanager.db，已终止');
+}
+if (path.resolve(process.env.DB_PATH) === PROD_DB_PATH) {
+  throw new Error('[TEST GUARD] DB_PATH 指向生产 bookmanager.db，测试已终止');
+}
 
 const supertest = require('supertest');
 const { db } = require('../../database');

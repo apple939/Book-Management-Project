@@ -3,8 +3,8 @@ process.env.DB_PATH = ':memory:';
 
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-const app = require('../app');
 const { db, resetDb, makeAgent, login, registerUser, addBook, formatLocalDateTime } = require('./helpers/test-utils');
+const app = require('../app');
 
 beforeEach(() => {
   resetDb();
