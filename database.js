@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const { hashPassword } = require('./lib/password');
 
 if (process.env.NODE_ENV === 'test') {
   const prodPath = path.join(__dirname, 'bookmanager.db');
@@ -76,7 +77,7 @@ function initDatabase() {
   const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
   if (!adminExists) {
     db.prepare('INSERT INTO users (username, password, realname, role) VALUES (?, ?, ?, ?)').run(
-      'admin', 'admin123', '系统管理员', 'admin'
+      'admin', hashPassword('admin123'), '系统管理员', 'admin'
     );
   }
 

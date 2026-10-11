@@ -11,6 +11,9 @@ if (path.resolve(process.env.DB_PATH) === PROD_DB_PATH) {
 
 const supertest = require('supertest');
 const { db } = require('../../database');
+const { hashPassword } = require('../../lib/password');
+
+let ADMIN_HASH = null;
 
 function resetDb() {
   db.exec(`
@@ -19,7 +22,8 @@ function resetDb() {
     DELETE FROM books;
     DELETE FROM users WHERE username != 'admin';
   `);
-  db.prepare("UPDATE users SET password = 'admin123', realname = '系统管理员', role = 'admin', status = 1, login_fails = 0, locked_until = NULL WHERE username = 'admin'").run();
+  if (!ADMIN_HASH) ADMIN_HASH = hashPassword('admin123');
+  db.prepare("UPDATE users SET password = ?, realname = '系统管理员', role = 'admin', status = 1, login_fails = 0, locked_until = NULL WHERE username = 'admin'").run(ADMIN_HASH);
 }
 
 function makeAgent(app) {

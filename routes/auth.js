@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { db, addLog } = require('../database');
 const svgCaptcha = require('svg-captcha');
+const { verifyPassword, hashPassword } = require('../lib/password');
 
 function requireLogin(req, res, next) {
   if (!req.session.user) return res.redirect('/auth/login');
@@ -38,7 +39,8 @@ router.post('/login', (req, res) => {
     db.prepare('UPDATE users SET login_fails = 0, locked_until = NULL WHERE id = ?').run(user.id);
   }
 
-  if (user.password !== password) {
+  const verify = verifyPassword(password, user.password);
+  if (!verify.valid) {
     const fails = user.login_fails + 1;
     if (fails >= 5) {
       const lockUntil = new Date(Date.now() + 30 * 60000).toISOString();
@@ -51,6 +53,10 @@ router.post('/login', (req, res) => {
   }
 
   db.prepare('UPDATE users SET login_fails = 0, locked_until = NULL WHERE id = ?').run(user.id);
+  if (verify.needsUpgrade) {
+    db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashPassword(password), user.id);
+    addLog(user.id, 'PASSWORD_UPGRADED', '密码已从明文透明升级为 bcrypt 哈希');
+  }
   req.session.user = { id: user.id, username: user.username, realname: user.realname, role: user.role };
   addLog(user.id, 'LOGIN_SUCCESS', '登录成功');
   res.redirect('/');
@@ -83,7 +89,7 @@ router.post('/register', (req, res) => {
   }
 
   db.prepare('INSERT INTO users (username, password, realname, email) VALUES (?, ?, ?, ?)').run(
-    username, password, realname || '', email || ''
+    username, hashPassword(password), realname || '', email || ''
   );
   addLog(null, 'REGISTER', `新用户注册: ${username}`);
   res.redirect('/auth/login?registered=1');

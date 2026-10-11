@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { db, addLog } = require('../database');
+const { verifyPassword, hashPassword } = require('../lib/password');
 
 function requireLogin(req, res, next) {
   if (!req.session.user) return res.redirect('/auth/login');
@@ -52,11 +53,11 @@ router.post('/password', requireLogin, (req, res) => {
   }
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
-  if (user.password !== oldPassword) {
+  if (!verifyPassword(oldPassword, user.password).valid) {
     return res.render('user/password', { title: '修改密码', error: '原密码错误', success: null });
   }
 
-  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(newPassword, req.session.user.id);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashPassword(newPassword), req.session.user.id);
   addLog(req.session.user.id, 'CHANGE_PASSWORD', '修改密码');
   res.render('user/password', { title: '修改密码', error: null, success: '密码修改成功' });
 });

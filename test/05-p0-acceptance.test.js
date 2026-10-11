@@ -19,16 +19,36 @@ async function loginAdmin() {
   return agent;
 }
 
-test('R1 [G01] 新注册用户的密码应为 bcrypt 哈希而非明文', { skip: skipWhen('G01') }, async () => {
+test('R1 [G01] 新注册用户的密码应为 bcrypt 哈希而非明文', async () => {
   await registerUser(makeAgent(app), 'r1user', 'plainpass123');
   const row = db.prepare("SELECT password FROM users WHERE username = 'r1user'").get();
   assert.ok(row, '用户应已注册');
   assert.match(row.password, /^\$2[aby]\$/, `密码应为 bcrypt 哈希，实际为: ${row.password}`);
 });
 
-test('R2 [G01] 预置 admin 账号密码应为 bcrypt 哈希', { skip: skipWhen('G01') }, async () => {
+test('R2 [G01] 预置 admin 账号密码应为 bcrypt 哈希', async () => {
   const row = db.prepare("SELECT password FROM users WHERE username = 'admin'").get();
   assert.match(row.password, /^\$2[aby]\$/, `admin 密码应为 bcrypt 哈希，实际为: ${row.password}`);
+});
+
+test('G01 旧明文密码登录成功并透明升级为哈希', async () => {
+  db.prepare("INSERT INTO users (username, password) VALUES ('legacy1', 'oldpass123')").run();
+  const agent = makeAgent(app);
+  const res = await login(agent, 'legacy1', 'oldpass123');
+  assert.equal(res.status, 302, '旧明文密码应可登录');
+  const row = db.prepare("SELECT password FROM users WHERE username = 'legacy1'").get();
+  assert.match(row.password, /^\$2[aby]\$/, '登录成功后密码应升级为哈希');
+});
+
+test('G01 错误密码登录不升级、不改写密码列', async () => {
+  db.prepare("INSERT INTO users (username, password) VALUES ('legacy2', 'oldpass123')").run();
+  const agent = makeAgent(app);
+  for (let i = 0; i < 3; i++) {
+    const res = await login(agent, 'legacy2', 'wrongpass');
+    assert.ok(res.text.includes('账号或密码错误'));
+  }
+  const row = db.prepare("SELECT password FROM users WHERE username = 'legacy2'").get();
+  assert.equal(row.password, 'oldpass123', '错误密码不得触发升级或改写');
 });
 
 test('R3 [G02] 借书应还日期为本地时间+30天（非 UTC）', async () => {
