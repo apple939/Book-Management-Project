@@ -13,6 +13,6 @@
   3. database.js：NODE_ENV=test 且 DB_PATH 缺失/指向生产库时 console.warn
   4. 新增回归测试断言测试进程 db 非生产库
   5. 测试文件 require 顺序调整为 helpers 先于 app，确保防线早于数据库打开
-- 备份：C:\Users\WangYang\AppData\Local\Temp\opencode\bookmanager.db.bak.20261011-202819
+- 备份：项目外临时目录（bookmanager.db.bak.20261011-202819），未提交 git
 - 教训：任何会执行测试代码的入口都必须在打开数据库前完成隔离校验；
   对生产库的操作（含只读打开）必须显式声明并征得同意
