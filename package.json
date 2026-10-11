@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "migrate": "node migrations/migrate.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.3",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
