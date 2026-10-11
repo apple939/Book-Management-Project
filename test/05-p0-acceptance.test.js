@@ -80,7 +80,7 @@ test('R5 [G04] 入库数量为负数应被拒绝且不产生脏数据', async ()
   assert.equal(row, undefined, '不应产生脏数据');
 });
 
-test('R6 [G23] 登录后首页应渲染 layout 外壳（完整 HTML/Bootstrap/导航/用户名）', { skip: skipWhen('G23') }, async () => {
+test('R6 [G23] 登录后首页应渲染 layout 外壳（完整 HTML/Bootstrap/导航/用户名）', async () => {
   const agent = makeAgent(app);
   await login(agent, 'admin', 'admin123');
   const res = await agent.get('/');

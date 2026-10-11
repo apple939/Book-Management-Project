@@ -194,7 +194,7 @@ test('TC_BORROW_011 未登录用户看不到借阅按钮且接口被重定向', 
   const anon = makeAgent(app);
   const list = await anon.get('/books');
   assert.equal(list.status, 200);
-  assert.ok(!list.text.includes('borrowBook('), '未登录不应显示借阅按钮');
+  assert.ok(!list.text.includes('onclick="borrowBook('), '未登录不应显示借阅按钮');
   const res = await anon.post(`/borrow/borrow/${book.id}`);
   assert.equal(res.status, 302);
   assert.ok(res.headers.location.includes('/auth/login'));

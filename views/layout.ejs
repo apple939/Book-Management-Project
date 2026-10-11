@@ -66,9 +66,9 @@
   <div class="container mt-4">
     <%
       const ALLOWED_PAGES = ['index', 'login', 'register', 'books/list', 'books/edit', 'books/detail', 'borrow/list', 'borrow/overdue', 'user/list', 'user/password', 'user/profile'];
-      if (!ALLOWED_PAGES.includes(page)) throw new Error('非法 page: ' + page);
+      if (!ALLOWED_PAGES.includes(view)) throw new Error('非法 view: ' + view);
     %>
-    <%- include(page) %>
+    <%- include(view) %>
   </div>
 
   <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

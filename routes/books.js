@@ -50,7 +50,7 @@ router.get('/', (req, res) => {
   const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
   const totalPages = Math.ceil(total / limit);
 
-  res.render('books/list', {
+  res.render('layout', { view: 'books/list',
     title: '图书管理',
     books,
     categories,
@@ -64,20 +64,20 @@ router.get('/', (req, res) => {
 
 router.get('/add', requireAdmin, (req, res) => {
   const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
-  res.render('books/edit', { title: '新增图书', book: null, categories });
+  res.render('layout', { view: 'books/edit', title: '新增图书', book: null, categories });
 });
 
 router.post('/add', requireAdmin, (req, res) => {
   const { isbn, title, author, publisher, publish_date, category_id, total_count, description } = req.body;
   if (!title || !author) {
     const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
-    return res.render('books/edit', { title: '新增图书', book: req.body, categories, error: '书名和作者不能为空' });
+    return res.render('layout', { view: 'books/edit', title: '新增图书', book: req.body, categories, error: '书名和作者不能为空' });
   }
 
   const total = parseBookCount(total_count);
   if (total === null) {
     const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
-    return res.render('books/edit', { title: '新增图书', book: req.body, categories, error: `入库数量必须为 1-${MAX_BOOK_COUNT} 的整数` });
+    return res.render('layout', { view: 'books/edit', title: '新增图书', book: req.body, categories, error: `入库数量必须为 1-${MAX_BOOK_COUNT} 的整数` });
   }
 
   db.prepare(`INSERT INTO books (isbn, title, author, publisher, publish_date, category_id, total_count, remain_count, description)
@@ -91,21 +91,21 @@ router.get('/edit/:id', requireAdmin, (req, res) => {
   const book = db.prepare('SELECT * FROM books WHERE id = ?').get(req.params.id);
   if (!book) return res.status(404).send('图书不存在');
   const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
-  res.render('books/edit', { title: '修改图书', book, categories });
+  res.render('layout', { view: 'books/edit', title: '修改图书', book, categories });
 });
 
 router.post('/edit/:id', requireAdmin, (req, res) => {
   const { isbn, title, author, publisher, publish_date, category_id, total_count, description } = req.body;
   if (!title || !author) {
     const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
-    return res.render('books/edit', { title: '修改图书', book: { ...req.body, id: req.params.id }, categories, error: '书名和作者不能为空' });
+    return res.render('layout', { view: 'books/edit', title: '修改图书', book: { ...req.body, id: req.params.id }, categories, error: '书名和作者不能为空' });
   }
 
   const oldBook = db.prepare('SELECT * FROM books WHERE id = ?').get(req.params.id);
   const total = parseBookCount(total_count);
   if (total === null) {
     const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
-    return res.render('books/edit', { title: '修改图书', book: { ...req.body, id: req.params.id }, categories, error: `入库数量必须为 1-${MAX_BOOK_COUNT} 的整数` });
+    return res.render('layout', { view: 'books/edit', title: '修改图书', book: { ...req.body, id: req.params.id }, categories, error: `入库数量必须为 1-${MAX_BOOK_COUNT} 的整数` });
   }
   const borrowed = oldBook.total_count - oldBook.remain_count;
   const remain = Math.max(0, total - borrowed);
@@ -132,7 +132,7 @@ router.get('/delete/:id', requireAdmin, (req, res) => {
 router.get('/detail/:id', (req, res) => {
   const book = db.prepare('SELECT b.*, c.name as category_name FROM books b LEFT JOIN categories c ON b.category_id = c.id WHERE b.id = ?').get(req.params.id);
   if (!book) return res.status(404).send('图书不存在');
-  res.render('books/detail', { title: book.title, book });
+  res.render('layout', { view: 'books/detail', title: book.title, book });
 });
 
 module.exports = router;

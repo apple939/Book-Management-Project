@@ -49,7 +49,7 @@ router.get('/', requireLogin, (req, res) => {
     .all(...params, limit, offset);
   const totalPages = Math.ceil(total / limit);
 
-  res.render('borrow/list', {
+  res.render('layout', { view: 'borrow/list',
     title: '借阅记录',
     records,
     status,
@@ -103,10 +103,10 @@ router.get('/overdue', requireLogin, (req, res) => {
   if (req.session.user.role !== 'admin') {
     sql += ' AND br.user_id = ?';
     const records = db.prepare(sql).all(req.session.user.id);
-    return res.render('borrow/overdue', { title: '逾期提醒', records });
+    return res.render('layout', { view: 'borrow/overdue', title: '逾期提醒', records });
   }
   const records = db.prepare(sql).all();
-  res.render('borrow/overdue', { title: '逾期提醒', records });
+  res.render('layout', { view: 'borrow/overdue', title: '逾期提醒', records });
 });
 
 module.exports = router;

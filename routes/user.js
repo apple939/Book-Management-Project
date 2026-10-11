@@ -16,7 +16,7 @@ function requireAdmin(req, res, next) {
 
 router.get('/profile', requireLogin, (req, res) => {
   const user = db.prepare('SELECT id, username, realname, email, phone, role, created_at FROM users WHERE id = ?').get(req.session.user.id);
-  res.render('user/profile', { title: '个人信息', user, error: null, success: null });
+  res.render('layout', { view: 'user/profile', title: '个人信息', user, error: null, success: null });
 });
 
 router.post('/profile', requireLogin, (req, res) => {
@@ -24,7 +24,7 @@ router.post('/profile', requireLogin, (req, res) => {
 
   if (!/^\d{0,11}$/.test(phone)) {
     const user = db.prepare('SELECT id, username, realname, email, phone, role, created_at FROM users WHERE id = ?').get(req.session.user.id);
-    return res.render('user/profile', { title: '个人信息', user, error: '手机号格式不正确', success: null });
+    return res.render('layout', { view: 'user/profile', title: '个人信息', user, error: '手机号格式不正确', success: null });
   }
 
   db.prepare('UPDATE users SET realname=?, email=?, phone=? WHERE id=?').run(realname, email, phone, req.session.user.id);
@@ -32,34 +32,34 @@ router.post('/profile', requireLogin, (req, res) => {
   addLog(req.session.user.id, 'UPDATE_PROFILE', '修改个人信息');
 
   const user = db.prepare('SELECT id, username, realname, email, phone, role, created_at FROM users WHERE id = ?').get(req.session.user.id);
-  res.render('user/profile', { title: '个人信息', user, error: null, success: '修改成功' });
+  res.render('layout', { view: 'user/profile', title: '个人信息', user, error: null, success: '修改成功' });
 });
 
 router.get('/password', requireLogin, (req, res) => {
-  res.render('user/password', { title: '修改密码', error: null, success: null });
+  res.render('layout', { view: 'user/password', title: '修改密码', error: null, success: null });
 });
 
 router.post('/password', requireLogin, (req, res) => {
   const { oldPassword, newPassword, newPassword2 } = req.body;
 
   if (!oldPassword || !newPassword) {
-    return res.render('user/password', { title: '修改密码', error: '密码不能为空', success: null });
+    return res.render('layout', { view: 'user/password', title: '修改密码', error: '密码不能为空', success: null });
   }
   if (newPassword.length < 6 || newPassword.length > 20) {
-    return res.render('user/password', { title: '修改密码', error: '新密码长度需在6-20位之间', success: null });
+    return res.render('layout', { view: 'user/password', title: '修改密码', error: '新密码长度需在6-20位之间', success: null });
   }
   if (newPassword !== newPassword2) {
-    return res.render('user/password', { title: '修改密码', error: '两次密码输入不一致', success: null });
+    return res.render('layout', { view: 'user/password', title: '修改密码', error: '两次密码输入不一致', success: null });
   }
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
   if (!verifyPassword(oldPassword, user.password).valid) {
-    return res.render('user/password', { title: '修改密码', error: '原密码错误', success: null });
+    return res.render('layout', { view: 'user/password', title: '修改密码', error: '原密码错误', success: null });
   }
 
   db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashPassword(newPassword), req.session.user.id);
   addLog(req.session.user.id, 'CHANGE_PASSWORD', '修改密码');
-  res.render('user/password', { title: '修改密码', error: null, success: '密码修改成功' });
+  res.render('layout', { view: 'user/password', title: '修改密码', error: null, success: '密码修改成功' });
 });
 
 router.get('/list', requireAdmin, (req, res) => {
@@ -71,7 +71,7 @@ router.get('/list', requireAdmin, (req, res) => {
   const users = db.prepare('SELECT id, username, realname, email, phone, role, status, created_at, login_fails FROM users ORDER BY id LIMIT ? OFFSET ?').all(limit, offset);
   const totalPages = Math.ceil(total / limit);
 
-  res.render('user/list', { title: '用户管理', users, page, totalPages, total });
+  res.render('layout', { view: 'user/list', title: '用户管理', users, page, totalPages, total });
 });
 
 router.post('/toggle/:id', requireAdmin, (req, res) => {
