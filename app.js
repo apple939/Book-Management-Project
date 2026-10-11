@@ -33,6 +33,15 @@ app.use((req, res, next) => {
   next();
 });
 
+if (process.env.NODE_ENV === 'test') {
+  app.use((req, res, next) => {
+    if (req.headers['x-test-captcha']) {
+      req.session.captcha = String(req.headers['x-test-captcha']);
+    }
+    next();
+  });
+}
+
 app.get('/', (req, res) => {
   const { db } = require('./database');
   const books = db.prepare(`
@@ -54,6 +63,10 @@ app.get('/logout', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`图书管理系统已启动: http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`图书管理系统已启动: http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
