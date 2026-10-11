@@ -1,0 +1,39 @@
+<h4 class="mb-3"><i class="bi bi-exclamation-triangle text-danger"></i> 逾期提醒</h4>
+
+<% if (records.length === 0) { %>
+<div class="alert alert-success">没有逾期记录。</div>
+<% } else { %>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>书名</th>
+          <% if (user.role === 'admin') { %><th>借阅人</th><% } %>
+          <th>借阅日期</th><th>应还日期</th><th>逾期天数</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% records.forEach(function(r) {
+          const dueDate = new Date(r.due_date);
+          const overdueDays = Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24));
+        %>
+        <tr>
+          <td><%= r.id %></td>
+          <td><%= r.book_title %></td>
+          <% if (user.role === 'admin') { %>
+          <td><%= r.realname || r.username %></td>
+          <% } %>
+          <td><%= r.borrow_date ? r.borrow_date.substring(0, 10) : '-' %></td>
+          <td><%= r.due_date ? r.due_date.substring(0, 10) : '-' %></td>
+          <td><span class="badge bg-danger"><%= overdueDays %> 天</span></td>
+          <td>
+            <button class="btn btn-sm btn-success" onclick="returnBook(<%= r.id %>)">归还</button>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>

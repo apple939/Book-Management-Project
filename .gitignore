@@ -1,0 +1,8 @@
+node_modules/
+bookmanager.db
+bookmanager.db-wal
+bookmanager.db-shm
+.env
+*.log
+coverage/
+test-output/

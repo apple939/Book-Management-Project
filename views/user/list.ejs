@@ -1,0 +1,53 @@
+<h4 class="mb-3"><i class="bi bi-people"></i> 用户管理 <small class="text-muted">共 <%= total %> 人</small></h4>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>ID</th><th>账号</th><th>姓名</th><th>邮箱</th><th>手机号</th><th>角色</th><th>状态</th><th>失败次数</th><th>注册时间</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(function(u) { %>
+        <tr>
+          <td><%= u.id %></td>
+          <td><%= u.username %></td>
+          <td><%= u.realname %></td>
+          <td><%= u.email || '-' %></td>
+          <td><%= u.phone || '-' %></td>
+          <td><span class="badge bg-<%= u.role === 'admin' ? 'danger' : 'primary' %>"><%= u.role === 'admin' ? '管理员' : '用户' %></span></td>
+          <td><span class="badge bg-<%= u.status === 1 ? 'success' : 'secondary' %>"><%= u.status === 1 ? '正常' : '禁用' %></span></td>
+          <td><%= u.login_fails %></td>
+          <td><%= u.created_at ? u.created_at.substring(0, 10) : '-' %></td>
+          <td>
+            <% if (u.role !== 'admin') { %>
+            <button class="btn btn-sm btn-<%= u.status === 1 ? 'warning' : 'success' %>" onclick="toggleUser(<%= u.id %>)">
+              <%= u.status === 1 ? '禁用' : '启用' %>
+            </button>
+            <% } %>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (totalPages > 1) { %>
+<nav class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+      <a class="page-link" href="?page=<%= page-1 %>">上一页</a>
+    </li>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+    <li class="page-item <%= i === page ? 'active' : '' %>">
+      <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+    </li>
+    <% } %>
+    <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+      <a class="page-link" href="?page=<%= page+1 %>">下一页</a>
+    </li>
+  </ul>
+</nav>
+<% } %>

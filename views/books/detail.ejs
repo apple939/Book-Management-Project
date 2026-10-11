@@ -1,0 +1,29 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><%= book.title %></h5>
+        <% if (user && book.remain_count > 0) { %>
+        <button class="btn btn-primary btn-sm" onclick="borrowBook(<%= book.id %>)"><i class="bi bi-cart-plus"></i> 借阅</button>
+        <% } %>
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <tr><th width="120">ISBN</th><td><%= book.isbn || '-' %></td></tr>
+          <tr><th>书名</th><td><%= book.title %></td></tr>
+          <tr><th>作者</th><td><%= book.author %></td></tr>
+          <tr><th>出版社</th><td><%= book.publisher || '-' %></td></tr>
+          <tr><th>出版日期</th><td><%= book.publish_date || '-' %></td></tr>
+          <tr><th>分类</th><td><%= book.category_name || '未分类' %></td></tr>
+          <tr><th>总数量</th><td><%= book.total_count %></td></tr>
+          <tr><th>可借数量</th><td><span class="badge bg-<%= book.remain_count > 0 ? 'success' : 'danger' %>"><%= book.remain_count %></span></td></tr>
+          <tr><th>简介</th><td><%= book.description || '暂无简介' %></td></tr>
+        </table>
+        <a href="/books" class="btn btn-secondary">返回列表</a>
+        <% if (user && user.role === 'admin') { %>
+        <a href="/books/edit/<%= book.id %>" class="btn btn-warning">编辑图书</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

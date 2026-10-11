@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - 图书管理系统</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background: #f5f6fa; min-height: 100vh; }
+    .navbar { box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .card { border: none; box-shadow: 0 1px 6px rgba(0,0,0,.08); border-radius: 8px; }
+    .btn-primary { background: #4a6cf7; border-color: #4a6cf7; }
+    .btn-primary:hover { background: #3b5de7; }
+    .table th { background: #f8f9fa; font-weight: 600; }
+    .badge-borrowed { background: #ffc107; }
+    .badge-returned { background: #28a745; }
+    .badge-overdue { background: #dc3545; }
+    .page-item.active .page-link { background: #4a6cf7; border-color: #4a6cf7; }
+    .login-container { max-width: 420px; margin: 80px auto; }
+    .book-card { transition: transform .2s; cursor: pointer; }
+    .book-card:hover { transform: translateY(-4px); }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="/"><i class="bi bi-book"></i> 图书管理系统</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="/books"><i class="bi bi-search"></i> 图书查询</a></li>
+          <% if (user) { %>
+          <li class="nav-item"><a class="nav-link" href="/borrow"><i class="bi bi-journal-text"></i> 借阅记录</a></li>
+          <li class="nav-item"><a class="nav-link" href="/borrow/overdue"><i class="bi bi-exclamation-triangle"></i> 逾期提醒</a></li>
+          <% } %>
+        </ul>
+        <ul class="navbar-nav">
+          <% if (user) { %>
+          <% if (user.role === 'admin') { %>
+          <li class="nav-item"><a class="nav-link" href="/books/add"><i class="bi bi-plus-circle"></i> 新增图书</a></li>
+          <li class="nav-item"><a class="nav-link" href="/user/list"><i class="bi bi-people"></i> 用户管理</a></li>
+          <% } %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> <%= user.realname || user.username %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/user/profile"><i class="bi bi-gear"></i> 个人信息</a></li>
+              <li><a class="dropdown-item" href="/user/password"><i class="bi bi-key"></i> 修改密码</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+            </ul>
+          </li>
+          <% } else { %>
+          <li class="nav-item"><a class="nav-link" href="/auth/login"><i class="bi bi-box-arrow-in-right"></i> 登录</a></li>
+          <li class="nav-item"><a class="nav-link" href="/auth/register"><i class="bi bi-person-plus"></i> 注册</a></li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <%- body %>
+  </div>
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function borrowBook(bookId) {
+      if (!confirm('确认借阅该书？借期30天。')) return;
+      fetch('/borrow/borrow/' + bookId, { method: 'POST' })
+        .then(r => r.json()).then(data => {
+          alert(data.msg);
+          if (data.ok) location.reload();
+        });
+    }
+    function returnBook(recordId) {
+      if (!confirm('确认归还该书？')) return;
+      fetch('/borrow/return/' + recordId, { method: 'POST' })
+        .then(r => r.json()).then(data => {
+          alert(data.msg);
+          if (data.ok) location.reload();
+        });
+    }
+    function toggleUser(userId) {
+      if (!confirm('确认切换该用户状态？')) return;
+      fetch('/user/toggle/' + userId, { method: 'POST' })
+        .then(r => r.json()).then(data => {
+          alert(data.msg);
+          if (data.ok) location.reload();
+        });
+    }
+  </script>
+</body>
+</html>

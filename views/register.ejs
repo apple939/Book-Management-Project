@@ -1,0 +1,36 @@
+<div class="login-container">
+  <div class="card">
+    <div class="card-body p-4">
+      <h3 class="text-center mb-4"><i class="bi bi-person-plus"></i> 用户注册</h3>
+      <% if (error) { %>
+      <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+      <form method="POST" action="/auth/register">
+        <div class="mb-3">
+          <label class="form-label">账号 <span class="text-danger">*</span></label>
+          <input type="text" name="username" class="form-control" placeholder="3-20位字母数字" required minlength="3" maxlength="20">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">密码 <span class="text-danger">*</span></label>
+          <input type="password" name="password" class="form-control" placeholder="6-20位密码" required minlength="6" maxlength="20">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">确认密码 <span class="text-danger">*</span></label>
+          <input type="password" name="password2" class="form-control" placeholder="再次输入密码" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">真实姓名</label>
+          <input type="text" name="realname" class="form-control" placeholder="选填">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">邮箱</label>
+          <input type="email" name="email" class="form-control" placeholder="选填">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">注 册</button>
+      </form>
+      <div class="text-center mt-3">
+        <a href="/auth/login">已有账号？返回登录</a>
+      </div>
+    </div>
+  </div>
+</div>

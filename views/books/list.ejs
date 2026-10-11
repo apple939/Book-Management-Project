@@ -1,0 +1,75 @@
+<h4 class="mb-3"><i class="bi bi-collection"></i> 图书列表</h4>
+
+<form action="/books" method="GET" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <input type="text" name="keyword" class="form-control" placeholder="书名/作者/ISBN" value="<%= keyword %>">
+  </div>
+  <div class="col-md-3">
+    <select name="category" class="form-select">
+      <option value="">全部分类</option>
+      <% categories.forEach(function(c) { %>
+      <option value="<%= c.id %>" <%= category == c.id ? 'selected' : '' %>><%= c.name %></option>
+      <% }); %>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> 查询</button>
+  </div>
+  <div class="col-md-3 text-end">
+    <small class="text-muted">共 <strong><%= total %></strong> 本图书</small>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>ISBN</th><th>书名</th><th>作者</th><th>分类</th><th>总量</th><th>可借</th>
+          <% if (user) { %><th>操作</th><% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% books.forEach(function(book) { %>
+        <tr>
+          <td><%= book.isbn || '-' %></td>
+          <td><a href="/books/detail/<%= book.id %>"><%= book.title %></a></td>
+          <td><%= book.author %></td>
+          <td><span class="badge bg-secondary"><%= book.category_name || '未分类' %></span></td>
+          <td><%= book.total_count %></td>
+          <td><span class="badge bg-<%= book.remain_count > 0 ? 'success' : 'danger' %>"><%= book.remain_count %></span></td>
+          <% if (user) { %>
+          <td>
+            <% if (book.remain_count > 0) { %>
+            <button class="btn btn-sm btn-outline-primary" onclick="borrowBook(<%= book.id %>)">借阅</button>
+            <% } %>
+            <% if (user.role === 'admin') { %>
+            <a href="/books/edit/<%= book.id %>" class="btn btn-sm btn-outline-warning">编辑</a>
+            <a href="/books/delete/<%= book.id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('确认删除该书？')">删除</a>
+            <% } %>
+          </td>
+          <% } %>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (totalPages > 1) { %>
+<nav class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+      <a class="page-link" href="?page=<%= page-1 %>&keyword=<%= keyword %>&category=<%= category %>">上一页</a>
+    </li>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+    <li class="page-item <%= i === page ? 'active' : '' %>">
+      <a class="page-link" href="?page=<%= i %>&keyword=<%= keyword %>&category=<%= category %>"><%= i %></a>
+    </li>
+    <% } %>
+    <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+      <a class="page-link" href="?page=<%= page+1 %>&keyword=<%= keyword %>&category=<%= category %>">下一页</a>
+    </li>
+  </ul>
+</nav>
+<% } %>

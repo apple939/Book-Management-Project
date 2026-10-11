@@ -1,0 +1,57 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0"><%= book ? '修改图书' : '新增图书' %></h5></div>
+      <div class="card-body">
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+        <form method="POST" action="<%= book ? '/books/edit/' + book.id : '/books/add' %>">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">ISBN</label>
+              <input type="text" name="isbn" class="form-control" value="<%= book ? book.isbn : '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">书名 <span class="text-danger">*</span></label>
+              <input type="text" name="title" class="form-control" required value="<%= book ? book.title : '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">作者 <span class="text-danger">*</span></label>
+              <input type="text" name="author" class="form-control" required value="<%= book ? book.author : '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">出版社</label>
+              <input type="text" name="publisher" class="form-control" value="<%= book ? book.publisher : '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">出版日期</label>
+              <input type="date" name="publish_date" class="form-control" value="<%= book ? book.publish_date : '' %>">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">分类</label>
+              <select name="category_id" class="form-select">
+                <option value="">未分类</option>
+                <% categories.forEach(function(c) { %>
+                <option value="<%= c.id %>" <%= book && book.category_id == c.id ? 'selected' : '' %>><%= c.name %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">入库数量 <span class="text-danger">*</span></label>
+              <input type="number" name="total_count" class="form-control" required min="1" value="<%= book ? book.total_count : 1 %>">
+            </div>
+            <div class="col-12">
+              <label class="form-label">简介</label>
+              <textarea name="description" class="form-control" rows="3"><%= book ? book.description : '' %></textarea>
+            </div>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="/books" class="btn btn-secondary">取消</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="row mb-4">
+  <div class="col-12">
+    <form action="/" method="GET" class="d-flex gap-2">
+      <input type="text" name="keyword" class="form-control" placeholder="输入书名/作者搜索图书..." value="<%= locals.keyword || '' %>">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> 搜索</button>
+    </form>
+  </div>
+</div>
+
+<h4 class="mb-3"><i class="bi bi-star-fill text-warning"></i> 最新图书</h4>
+<div class="row">
+  <% if (books.length === 0) { %>
+  <div class="col-12 text-center py-5 text-muted">暂无图书</div>
+  <% } %>
+  <% books.forEach(function(book) { %>
+  <div class="col-md-3 col-sm-6 mb-3">
+    <div class="card book-card" onclick="location.href='/books/detail/<%= book.id %>'">
+      <div class="card-body text-center py-4">
+        <i class="bi bi-book" style="font-size:3rem;color:#4a6cf7"></i>
+        <h6 class="mt-2"><%= book.title %></h6>
+        <small class="text-muted"><%= book.author %></small><br>
+        <small class="text-muted"><%= book.category_name || '未分类' %></small><br>
+        <span class="badge bg-<%= book.remain_count > 0 ? 'success' : 'danger' %> mt-1">
+          <%= book.remain_count > 0 ? '可借 ' + book.remain_count + ' 册' : '已借完' %>
+        </span>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+</div>
+<div class="text-center mt-3">
+  <a href="/books" class="btn btn-outline-primary">查看全部图书 <i class="bi bi-arrow-right"></i></a>
+</div>
