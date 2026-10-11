@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
     LEFT JOIN categories c ON b.category_id = c.id
     WHERE b.status = 1 ORDER BY b.created_at DESC LIMIT 12
   `).all();
-  res.render('index', { books, title: '图书管理系统' });
+  res.render('layout', { page: 'index', books, title: '图书管理系统' });
 });
 
 app.use('/auth', authRoutes);
