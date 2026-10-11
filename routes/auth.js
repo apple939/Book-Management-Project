@@ -11,7 +11,7 @@ function requireLogin(req, res, next) {
 
 router.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/');
-  res.render('login', { title: '用户登录', error: null });
+  res.render('layout', { page: 'login', title: '用户登录', error: null });
 });
 
 router.post('/login', (req, res) => {
